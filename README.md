@@ -1,36 +1,144 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# File Uploader
 
-## Getting Started
+A reusable file uploader component with AWS S3 integration for Next.js applications.
 
-First, run the development server:
+## Features
+
+- 📁 Generic file uploader component with progress bar
+- 🔄 S3 pre-signed URL upload flow
+- 📥 Download API for retrieving files
+- ⚙️ Fully configurable routes and components
+- 🔌 Easy to integrate in any Next.js project
+
+## Installation
 
 ```bash
-npm run dev
+npm install file-uploader
 # or
-yarn dev
+yarn add file-uploader
 # or
-pnpm dev
-# or
-bun dev
+pnpm add file-uploader
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Environment Variables
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Create a `.env` file in your project root with the following variables:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+# AWS S3 Configuration
+AWS_REGION=us-east-1
+AWS_ACCESS_KEY_ID=your_access_key_id
+AWS_SECRET_ACCESS_KEY=your_secret_access_key
+AWS_S3_BUCKET=your_bucket_name
 
-## Learn More
+# API Configuration
+NEXT_PUBLIC_API_URL=http://localhost:3000
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Usage
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### FileUploader Component
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```tsx
+import { FileUploader } from 'file-uploader';
 
-## Deploy on Vercel
+export default function UploadPage() {
+  const [file, setFile] = useState<File | null>(null);
+  
+  return (
+    <div>
+      <input 
+        type="file" 
+        onChange={(e) => setFile(e.target.files?.[0] || null)} 
+      />
+      
+      {file && (
+        <FileUploader
+          file={file}
+          allowedFileTypes={['image/jpeg', 'image/png', 'application/pdf']}
+          maxFileSize={10 * 1024 * 1024} // 10MB
+          onUploadComplete={(key) => console.log('Uploaded:', key)}
+          onUploadError={(error) => console.error('Error:', error)}
+          onUploadProgress={(progress) => console.log('Progress:', progress)}
+          config={{
+            apiBaseUrl: 'https://your-api.com',
+            endpoints: {
+              presignedUrl: '/api/custom/upload'
+            }
+          }}
+        />
+      )}
+    </div>
+  );
+}
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### API Routes
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+#### Upload Route
+
+In your Next.js API route:
+
+```ts
+// app/api/upload/route.ts
+import { createUploadHandler } from 'file-uploader';
+
+// Custom configuration
+export const POST = createUploadHandler({
+  allowedFileTypes: ['image/jpeg', 'image/png', 'application/pdf'],
+  maxFileSize: 10 * 1024 * 1024 // 10MB
+});
+```
+
+#### Download Route
+
+In your Next.js API route:
+
+```ts
+// app/api/download/route.ts
+import { createDownloadHandler } from 'file-uploader';
+
+// With optional hook
+export const POST = createDownloadHandler({
+  onDownload: async (s3Key) => {
+    // Log download or update analytics
+    console.log(`File downloaded: ${s3Key}`);
+  }
+});
+```
+
+### S3 Utilities
+
+```ts
+import { createPresignedUploadUrl, getSignedUrl, getFileByS3Key } from 'file-uploader';
+
+// Generate a pre-signed upload URL
+const { url, fields, key } = await createPresignedUploadUrl({
+  fileName: 'document.pdf',
+  fileType: 'application/pdf'
+});
+
+// Get a signed URL for an existing file
+const signedUrl = await getSignedUrl('uploads/123/document.pdf');
+
+// Retrieve a file from S3
+const { buffer, size, contentType } = await getFileByS3Key('uploads/123/document.pdf');
+```
+
+## Configuration
+
+### FileUploader Props
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `file` | `File` | The file to upload (required) |
+| `allowedFileTypes` | `string[]` | List of allowed MIME types (required) |
+| `maxFileSize` | `number` | Maximum file size in bytes (required) |
+| `onUploadComplete` | `(key: string) => void` | Callback when upload completes |
+| `onUploadError` | `(error: Error) => void` | Callback when upload fails |
+| `onUploadProgress` | `(progress: number) => void` | Callback for upload progress |
+| `config` | `object` | Additional configuration options |
+
+## License
+
+MIT

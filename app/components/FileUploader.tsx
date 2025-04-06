@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 
-interface FileUploaderConfig {
+export interface FileUploaderConfig {
     allowedFileTypes: string[];
     maxFileSize: number;
     apiBaseUrl: string;
@@ -11,11 +11,11 @@ interface FileUploaderConfig {
     }
 }
 
-type DeepPartial<T> = {
+export type DeepPartial<T> = {
     [P in keyof T]?: T[P] extends object ? DeepPartial<T[P]> : T[P];
 };
 
-interface FileUploaderProps {
+export interface FileUploaderProps {
     file: File;
     allowedFileTypes: string[];
     maxFileSize: number;
