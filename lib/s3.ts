@@ -25,19 +25,20 @@ interface GetPresignedUrlParams {
 }
 
 export async function createPresignedUploadUrl({ fileType, fileName }: GetPresignedUrlParams) {
-    if (!ALLOWED_FILE_TYPES.includes(fileType)) {
-        throw new Error('File type not allowed');
-    }
-
     const key = `uploads/${uuidv4()}/${fileName}`;
+
+    const conditions: any[] = [
+        ['content-length-range', 0, MAX_FILE_SIZE]
+    ];
+
+    if (fileType.startsWith('audio/')) {
+        conditions.push(['starts-with', '$Content-Type', 'audio/']);
+    }
 
     const { url, fields } = await createPresignedPost(s3Client, {
         Bucket: process.env.AWS_S3_BUCKET!,
         Key: key,
-        Conditions: [
-            ['content-length-range', 0, MAX_FILE_SIZE],
-            ['starts-with', '$Content-Type', 'audio/'],
-        ],
+        Conditions: conditions,
         Fields: {
             'Content-Type': fileType,
         },

@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { createPresignedUploadUrl } from '@/lib/s3';
 
 export interface FileUploaderConfig {
     allowedFileTypes: string[];
@@ -17,7 +18,7 @@ export type DeepPartial<T> = {
 
 export interface FileUploaderProps {
     file: File;
-    allowedFileTypes: string[];
+    allowedFileTypes: string[] | '*';
     maxFileSize: number;
     onUploadComplete?: (fileKey: string) => void;
     onUploadError?: (error: Error) => void;
@@ -60,22 +61,21 @@ export default function FileUploader({
         }
     };
 
-    const [uploadProgress, setUploadProgress] = useState(0);
-    const [error, setError] = useState<string | null>(null);
     const [isUploading, setIsUploading] = useState(false);
+    const uploadAttempted = useRef(false);
 
     // Handle file upload
     useEffect(() => {
-        if (!file || isUploading) return;
+        if (!file || isUploading || uploadAttempted.current) return;
 
         const uploadFile = async () => {
-            setError(null);
-            setUploadProgress(0);
             setIsUploading(true);
+            uploadAttempted.current = true;
 
             try {
-                if (!finalConfig.allowedFileTypes.includes(file.type)) {
-                    throw new Error(`File type not supported. Allowed types: ${finalConfig.allowedFileTypes.join(', ')}`);
+                // Check if file type is allowed (skip check if allowedFileTypes is '*')
+                if (allowedFileTypes !== '*' && !allowedFileTypes.includes(file.type)) {
+                    throw new Error(`File type not supported. Allowed types: ${allowedFileTypes.join(', ')}`);
                 }
 
                 if (file.size > finalConfig.maxFileSize) {
@@ -91,8 +91,6 @@ export default function FileUploader({
                 onUploadComplete?.(presignedPost.key);
             } catch (err) {
                 const error = err instanceof Error ? err : new Error('Upload failed');
-                setError(error.message);
-                setUploadProgress(0);
                 onUploadError?.(error);
             } finally {
                 setIsUploading(false);
@@ -118,7 +116,8 @@ export default function FileUploader({
         });
 
         if (!response.ok) {
-            throw new Error('Failed to get presigned URL');
+            const errorData = await response.json().catch(() => null);
+            throw new Error(errorData?.message || 'Failed to get presigned URL');
         }
 
         return response.json();
@@ -139,7 +138,6 @@ export default function FileUploader({
                 if (event.lengthComputable) {
                     const percentComplete = (event.loaded / event.total) * 100;
                     const progress = Math.round(percentComplete);
-                    setUploadProgress(progress);
                     onUploadProgress?.(progress);
                 }
             });
@@ -161,27 +159,5 @@ export default function FileUploader({
         });
     };
 
-    return (
-        <div className="space-y-6">
-            {uploadProgress > 0 && uploadProgress < 100 && (
-                <div className="mt-4">
-                    <div className="w-full bg-gray-200 rounded-full h-2.5">
-                        <div
-                            className="bg-blue-600 h-2.5 rounded-full transition-all duration-300"
-                            style={{ width: `${uploadProgress}%` }}
-                        />
-                    </div>
-                    <p className="text-sm text-gray-600 mt-2">
-                        Uploading... {uploadProgress}%
-                    </p>
-                </div>
-            )}
-
-            {error && (
-                <div className="mt-4 text-red-600 text-sm">
-                    {error}
-                </div>
-            )}
-        </div>
-    );
+    return null; // Component doesn't render anything, it just handles the upload
 } 

@@ -1,62 +1,50 @@
 {
   "name": "file-uploader",
-  "version": "0.1.0",
-  "description": "A reusable file uploader component with S3 integration",
+  "version": "1.0.0",
   "private": false,
+  "description": "A Next.js file uploader component with S3 integration",
   "main": "index.ts",
   "types": "index.ts",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
-    "prepare": "husky install"
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.0.0",
+    "@aws-sdk/s3-request-presigner": "^3.0.0",
+    "next": "14.1.0",
+    "react": "^18",
+    "react-dom": "^18"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "autoprefixer": "^10.0.1",
+    "eslint": "^8",
+    "eslint-config-next": "14.1.0",
+    "postcss": "^8",
+    "tailwindcss": "^3.3.0",
+    "typescript": "^5"
+  },
+  "peerDependencies": {
+    "next": ">=14.0.0",
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/yourusername/file-uploader.git"
+    "url": "https://github.com/your-username/file-uploader.git"
   },
   "keywords": [
+    "nextjs",
+    "react",
     "file-upload",
     "s3",
-    "nextjs",
-    "react"
+    "aws"
   ],
   "author": "Your Name",
-  "license": "MIT",
-  "dependencies": {
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "next": "15.2.4",
-    "@prisma/client": "^5.9.0",
-    "@aws-sdk/client-s3": "^3.504.0",
-    "@aws-sdk/s3-presigned-post": "^3.504.0",
-    "@aws-sdk/s3-request-presigner": "^3.504.0",
-    "@tanstack/react-query": "^5.0.0",
-    "react-dropzone": "^14.2.3",
-    "sonner": "^1.0.0",
-    "uuid": "^9.0.1"
-  },
-  "peerDependencies": {
-    "react": ">=18.0.0",
-    "react-dom": ">=18.0.0",
-    "next": ">=13.0.0"
-  },
-  "devDependencies": {
-    "typescript": "^5",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "@tailwindcss/postcss": "^4",
-    "tailwindcss": "^4",
-    "eslint": "^9",
-    "eslint-config-next": "15.2.4",
-    "@eslint/eslintrc": "^3",
-    "prisma": "^5.9.0",
-    "@types/uuid": "^9.0.8",
-    "husky": "^8.0.3"
-  },
-  "engines": {
-    "node": ">=16.0.0"
-  }
+  "license": "MIT"
 }
