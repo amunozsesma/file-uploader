@@ -1,13 +1,13 @@
 # File Uploader
 
-A reusable file uploader component with AWS S3 integration for Next.js applications.
+A reusable file uploader hook with AWS S3 integration for Next.js applications.
 
 ## Features
 
-- 📁 Generic file uploader component with progress bar
+- 📁 Generic file uploader hook with progress tracking
 - 🔄 S3 pre-signed URL upload flow
 - 📥 Download API for retrieving files
-- ⚙️ Fully configurable routes and components
+- ⚙️ Fully configurable routes and hooks
 - 🔌 Easy to integrate in any Next.js project
 - 📦 TypeScript support with exported types
 
@@ -56,36 +56,73 @@ NEXT_PUBLIC_API_URL=http://localhost:3000
 
 ## Usage
 
-### FileUploader Component
+### useFileUploader Hook
 
 ```tsx
-import { FileUploader, FileUploaderProps, FileUploaderConfig } from 'file-uploader';
+import { useState } from 'react';
+import { useFileUploader } from 'file-uploader';
 
 export default function UploadPage() {
   const [file, setFile] = useState<File | null>(null);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadedKey, setUploadedKey] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  
+  const { isUploading, uploadFile, reset } = useFileUploader({
+    file,
+    allowedFileTypes: ['image/jpeg', 'image/png', 'application/pdf'],
+    maxFileSize: 10 * 1024 * 1024, // 10MB
+    onUploadComplete: (key) => {
+      console.log('Uploaded:', key);
+      setUploadedKey(key);
+    },
+    onUploadError: (error) => {
+      console.error('Error:', error);
+      setError(error.message);
+    },
+    onUploadProgress: (progress) => {
+      console.log('Progress:', progress);
+      setUploadProgress(progress);
+    },
+    config: {
+      apiBaseUrl: 'https://your-api.com',
+      endpoints: {
+        uploadUrl: '/api/custom/upload'
+      }
+    }
+  });
+  
+  const handleFileChange = (e) => {
+    const selectedFile = e.target.files?.[0] || null;
+    if (selectedFile) {
+      setFile(selectedFile);
+      reset(); // Reset the upload state
+      
+      // Optionally start upload immediately
+      uploadFile(selectedFile).catch((err) => {
+        // Error is handled by onUploadError
+      });
+    }
+  };
   
   return (
     <div>
       <input 
         type="file" 
-        onChange={(e) => setFile(e.target.files?.[0] || null)} 
+        onChange={handleFileChange} 
+        disabled={isUploading}
       />
       
-      {file && (
-        <FileUploader
-          file={file}
-          allowedFileTypes={['image/jpeg', 'image/png', 'application/pdf']}
-          maxFileSize={10 * 1024 * 1024} // 10MB
-          onUploadComplete={(key) => console.log('Uploaded:', key)}
-          onUploadError={(error) => console.error('Error:', error)}
-          onUploadProgress={(progress) => console.log('Progress:', progress)}
-          config={{
-            apiBaseUrl: 'https://your-api.com',
-            endpoints: {
-              presignedUrl: '/api/custom/upload'
-            }
-          }}
-        />
+      {uploadProgress > 0 && (
+        <div>Upload progress: {uploadProgress}%</div>
+      )}
+      
+      {error && (
+        <div>Error: {error}</div>
+      )}
+      
+      {uploadedKey && (
+        <div>File uploaded successfully! Key: {uploadedKey}</div>
       )}
     </div>
   );
@@ -95,18 +132,26 @@ export default function UploadPage() {
 function AnyFileUploader() {
   const [file, setFile] = useState<File | null>(null);
   
+  const { isUploading, uploadFile } = useFileUploader({
+    file,
+    allowedFileTypes: '*', // Accept any file type
+    maxFileSize: 10 * 1024 * 1024,
+    onUploadComplete: (key) => console.log('Uploaded:', key)
+  });
+  
   return (
     <div>
-      <input type="file" onChange={(e) => setFile(e.target.files?.[0] || null)} />
-      
-      {file && (
-        <FileUploader
-          file={file}
-          allowedFileTypes="*"
-          maxFileSize={10 * 1024 * 1024}
-          onUploadComplete={(key) => console.log('Uploaded:', key)}
-        />
-      )}
+      <input 
+        type="file" 
+        onChange={(e) => {
+          const selectedFile = e.target.files?.[0] || null;
+          if (selectedFile) {
+            setFile(selectedFile);
+            uploadFile(selectedFile);
+          }
+        }} 
+        disabled={isUploading}
+      />
     </div>
   );
 }
@@ -172,11 +217,11 @@ const { buffer, size, contentType } = await getFileByS3Key('uploads/123/document
 
 ## Configuration
 
-### FileUploader Props
+### useFileUploader Props
 
 | Prop | Type | Description |
 |------|------|-------------|
-| `file` | `File` | The file to upload (required) |
+| `file` | `File \| null` | The file to upload (pass null initially) |
 | `allowedFileTypes` | `string[]` or `'*'` | List of allowed MIME types or `'*'` for any type (required) |
 | `maxFileSize` | `number` | Maximum file size in bytes (required) |
 | `onUploadComplete` | `(key: string) => void` | Callback when upload completes |
@@ -184,13 +229,23 @@ const { buffer, size, contentType } = await getFileByS3Key('uploads/123/document
 | `onUploadProgress` | `(progress: number) => void` | Callback for upload progress |
 | `config` | `FileUploaderConfig` | Additional configuration options |
 
+### useFileUploader Return Value
+
+```typescript
+interface UseFileUploaderResult {
+  isUploading: boolean;       // Whether a file is currently being uploaded
+  uploadFile: (file: File) => Promise<void>;  // Function to manually trigger upload
+  reset: () => void;          // Function to reset the upload state
+}
+```
+
 ### FileUploaderConfig
 
 ```typescript
 interface FileUploaderConfig {
   apiBaseUrl?: string;
   endpoints?: {
-    presignedUrl?: string;
+    uploadUrl?: string;
   };
 }
 ```

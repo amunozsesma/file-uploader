@@ -1,22 +1,45 @@
 'use client';
 
-import { useState } from 'react';
-import FileUploader from './components/FileUploader';
+import { useState, useEffect } from 'react';
+import { useFileUploader } from './hooks/useFileUploader';
 
 export default function Home() {
   const [file, setFile] = useState<File | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [uploadedKey, setUploadedKey] = useState<string | null>(null);
-  const [isUploading, setIsUploading] = useState(false);
+
+  const { isUploading, uploadFile, reset } = useFileUploader({
+    file,
+    allowedFileTypes: '*',
+    maxFileSize: 10 * 1024 * 1024, // 10MB
+    onUploadComplete: (key: string) => {
+      setUploadedKey(key);
+      setUploadProgress(100);
+    },
+    onUploadError: (error: Error) => {
+      setError(error.message);
+      setUploadProgress(0);
+    },
+    onUploadProgress: (progress: number) => {
+      setUploadProgress(progress);
+    }
+  });
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0] || null;
-    setFile(selectedFile);
-    setError(null);
-    setUploadProgress(0);
-    setUploadedKey(null);
-    setIsUploading(false);
+    if (selectedFile) {
+      setFile(selectedFile);
+      setError(null);
+      setUploadProgress(0);
+      setUploadedKey(null);
+      reset(); // Reset the uploader state
+
+      // Automatically start upload when file is selected
+      uploadFile(selectedFile).catch(err => {
+        // Error is handled by onUploadError
+      });
+    }
   };
 
   return (
@@ -73,29 +96,6 @@ export default function Home() {
                 File uploaded successfully! Key: {uploadedKey}
               </p>
             </div>
-          )}
-
-          {/* File Uploader Component */}
-          {file && (
-            <FileUploader
-              file={file}
-              allowedFileTypes="*"
-              maxFileSize={10 * 1024 * 1024} // 10MB
-              onUploadComplete={(key: string) => {
-                setUploadedKey(key);
-                setUploadProgress(100);
-                setIsUploading(false);
-              }}
-              onUploadError={(error: Error) => {
-                setError(error.message);
-                setUploadProgress(0);
-                setIsUploading(false);
-              }}
-              onUploadProgress={(progress: number) => {
-                setUploadProgress(progress);
-                setIsUploading(true);
-              }}
-            />
           )}
         </div>
       </div>
