@@ -1,6 +1,6 @@
 {
   "name": "@amunozsesma/file-uploader",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "private": false,
   "description": "A Next.js file uploader component with S3 integration",
   "main": "dist/index.js",

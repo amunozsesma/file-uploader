@@ -196,25 +196,6 @@ export const POST = createDownloadHandler({
   }
 });
 ```
-
-### S3 Utilities
-
-```ts
-import { createPresignedUploadUrl, getSignedUrl, getFileByS3Key } from 'file-uploader';
-
-// Generate a pre-signed upload URL
-const { url, fields, key } = await createPresignedUploadUrl({
-  fileName: 'document.pdf',
-  fileType: 'application/pdf'
-});
-
-// Get a signed URL for an existing file
-const signedUrl = await getSignedUrl('uploads/123/document.pdf');
-
-// Retrieve a file from S3
-const { buffer, size, contentType } = await getFileByS3Key('uploads/123/document.pdf');
-```
-
 ## Configuration
 
 ### useFileUploader Props
