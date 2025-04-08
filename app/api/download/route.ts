@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getFileByS3Key } from '@/lib/s3';
+import { S3Client } from '@aws-sdk/client-s3';
 
 /**
 * Default POST handler for s3 downloads
@@ -26,6 +27,7 @@ async function handleDownload(
     req: NextRequest,
     options?: {
         onDownload?: (s3Key: string) => Promise<void>;
+        s3Client?: S3Client;
     }
 ) {
     try {
@@ -42,8 +44,12 @@ async function handleDownload(
             return NextResponse.json({ error: 'Missing S3 key' }, { status: 400 });
         }
 
+        if (!options?.s3Client) {
+            return NextResponse.json({ error: 'Missing s3 client' }, { status: 400 });
+        }
+
         // Get the file from S3
-        const { buffer, size, contentType } = await getFileByS3Key(s3Key);
+        const { buffer, size, contentType } = await getFileByS3Key(s3Key, options.s3Client);
 
         if (!buffer) {
             return NextResponse.json({ error: 'File not found' }, { status: 404 });

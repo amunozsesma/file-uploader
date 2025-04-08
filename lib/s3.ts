@@ -1,30 +1,16 @@
-import { S3Client, PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
+import { S3Client, GetObjectCommand } from '@aws-sdk/client-s3';
 import { createPresignedPost } from '@aws-sdk/s3-presigned-post';
 import { getSignedUrl as awsGetSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { v4 as uuidv4 } from 'uuid';
-
-if (!process.env.AWS_REGION) throw new Error('AWS_REGION is not defined');
-if (!process.env.AWS_ACCESS_KEY_ID) throw new Error('AWS_ACCESS_KEY_ID is not defined');
-if (!process.env.AWS_SECRET_ACCESS_KEY) throw new Error('AWS_SECRET_ACCESS_KEY is not defined');
-if (!process.env.AWS_S3_BUCKET) throw new Error('AWS_S3_BUCKET is not defined');
-
-const s3Client = new S3Client({
-    region: process.env.AWS_REGION,
-    credentials: {
-        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-    },
-});
-
-export { s3Client };
 
 interface GetPresignedUrlParams {
     fileType: string;
     fileName: string;
     maxFileSize: number;
+    s3Client: S3Client;
 }
 
-export async function createPresignedUploadUrl({ fileType, fileName, maxFileSize }: GetPresignedUrlParams) {
+export async function createPresignedUploadUrl({ fileType, fileName, maxFileSize, s3Client }: GetPresignedUrlParams) {
     const key = `uploads/${uuidv4()}/${fileName}`;
 
     const conditions: any[] = [
@@ -52,7 +38,7 @@ export async function createPresignedUploadUrl({ fileType, fileName, maxFileSize
     };
 }
 
-export async function getSignedUrl(key: string): Promise<string> {
+export async function getSignedUrl(key: string, s3Client: S3Client): Promise<string> {
     const command = new GetObjectCommand({
         Bucket: process.env.AWS_S3_BUCKET!,
         Key: key,
@@ -66,14 +52,14 @@ export async function getSignedUrl(key: string): Promise<string> {
  * @param s3Key The S3 key of the file
  * @returns Buffer and metadata for the file
  */
-export async function getFileByS3Key(s3Key: string): Promise<{ buffer: Buffer; size: number; contentType: string | undefined }> {
+export async function getFileByS3Key(s3Key: string, s3Client: S3Client): Promise<{ buffer: Buffer; size: number; contentType: string | undefined }> {
     try {
         if (!s3Key) {
             throw new Error('S3 key is required');
         }
 
         // Get a signed URL to access the file
-        const fileUrl = await getSignedUrl(s3Key);
+        const fileUrl = await getSignedUrl(s3Key, s3Client);
 
         // Fetch the file content
         const response = await fetch(fileUrl);
