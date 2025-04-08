@@ -2,7 +2,6 @@ import { S3Client, PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3
 import { createPresignedPost } from '@aws-sdk/s3-presigned-post';
 import { getSignedUrl as awsGetSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { v4 as uuidv4 } from 'uuid';
-import { ALLOWED_FILE_TYPES, MAX_FILE_SIZE } from './constants';
 
 if (!process.env.AWS_REGION) throw new Error('AWS_REGION is not defined');
 if (!process.env.AWS_ACCESS_KEY_ID) throw new Error('AWS_ACCESS_KEY_ID is not defined');
@@ -22,13 +21,14 @@ export { s3Client };
 interface GetPresignedUrlParams {
     fileType: string;
     fileName: string;
+    maxFileSize: number;
 }
 
-export async function createPresignedUploadUrl({ fileType, fileName }: GetPresignedUrlParams) {
+export async function createPresignedUploadUrl({ fileType, fileName, maxFileSize }: GetPresignedUrlParams) {
     const key = `uploads/${uuidv4()}/${fileName}`;
 
     const conditions: any[] = [
-        ['content-length-range', 0, MAX_FILE_SIZE]
+        ['content-length-range', 0, maxFileSize]
     ];
 
     if (fileType.startsWith('audio/')) {

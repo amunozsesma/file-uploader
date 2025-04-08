@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { createPresignedUploadUrl } from '@/lib/s3';
 
 export interface FileUploaderConfig {
     allowedFileTypes: string[];
@@ -45,7 +44,7 @@ export default function FileUploader({
     const DEFAULT_CONFIG: Omit<FileUploaderConfig, 'allowedFileTypes' | 'maxFileSize'> = {
         apiBaseUrl: process.env.NEXT_PUBLIC_API_URL || '',
         endpoints: {
-            presignedUrl: '/api/upload/presigned-url'
+            presignedUrl: '/api/upload'
         }
     };
 

@@ -23,7 +23,7 @@ export function createUploadHandler(config: {
 // Core implementation
 async function handleUpload(
     request: Request,
-    config: { allowedFileTypes: string[], maxFileSize: number }
+    config: { allowedFileTypes: string[] | '*', maxFileSize: number }
 ) {
     try {
         const { fileName, fileType, fileSize } = await request.json();
@@ -43,6 +43,7 @@ async function handleUpload(
         const presignedPost = await createPresignedUploadUrl({
             fileName,
             fileType,
+            maxFileSize: config.maxFileSize
         });
 
         return NextResponse.json(presignedPost);
