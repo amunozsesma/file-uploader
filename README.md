@@ -13,12 +13,30 @@ A reusable file uploader component with AWS S3 integration for Next.js applicati
 
 ## Installation
 
+You can install the package directly from npm:
+
 ```bash
+# Using npm
 npm install file-uploader
-# or
+
+# Using yarn
 yarn add file-uploader
-# or
+
+# Using pnpm
 pnpm add file-uploader
+```
+
+Or you can install from your GitLab repository:
+
+```bash
+# Using npm
+npm install git+https://gitlab.com/your-username/file-uploader.git
+
+# Using yarn
+yarn add git+https://gitlab.com/your-username/file-uploader.git
+
+# Using pnpm
+pnpm add git+https://gitlab.com/your-username/file-uploader.git
 ```
 
 ## Environment Variables

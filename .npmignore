@@ -1,0 +1,42 @@
+# Source code
+app/
+public/
+lib/
+
+# Config files
+.next/
+.github/
+node_modules/
+.env*
+.eslintrc*
+.prettierrc*
+.gitignore
+.git/
+.vscode/
+tsconfig.json
+tsconfig.build.json
+postcss.config.*
+tailwind.config.*
+next.config.*
+
+# Build artifacts
+coverage/
+logs/
+
+# Documentation
+docs/
+CONTRIBUTING.md
+CODE_OF_CONDUCT.md
+
+# Tests
+**/*.test.ts
+**/*.test.tsx
+**/*.spec.ts
+**/*.spec.tsx
+
+# Temporary files
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.tsbuildinfo 

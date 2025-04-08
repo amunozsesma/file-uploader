@@ -1,33 +1,44 @@
 {
-  "name": "file-uploader",
+  "name": "@amunozsesma/file-uploader",
   "version": "1.0.0",
   "private": false,
   "description": "A Next.js file uploader component with S3 integration",
-  "main": "index.ts",
-  "types": "index.ts",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "prepublishOnly": "npm run build:package",
+    "build:package": "tsup index.ts --format cjs,esm --dts --external react --external next --external react-dom --external @aws-sdk/* --external uuid --no-config"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.0.0",
     "@aws-sdk/s3-request-presigner": "^3.0.0",
+    "@aws-sdk/s3-presigned-post": "^3.0.0",
     "next": "14.1.0",
     "react": "^18",
-    "react-dom": "^18"
+    "react-dom": "^18",
+    "uuid": "^9.0.0"
   },
   "devDependencies": {
+    "@swc/core": "^1.11.18",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
+    "@types/uuid": "^9.0.0",
     "autoprefixer": "^10.0.1",
     "eslint": "^8",
     "eslint-config-next": "14.1.0",
     "postcss": "^8",
     "tailwindcss": "^3.3.0",
-    "typescript": "^5"
+    "typescript": "^5",
+    "tsup": "^8.0.1"
   },
   "peerDependencies": {
     "next": ">=14.0.0",
